@@ -2,6 +2,10 @@ package hu.unideb.inf.myapplication;
 
 import static hu.unideb.inf.myapplication.R.id.finalResultTextView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
@@ -41,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private int pont = 0;
 
+    private int x_irany = 5;
+    private int y_irany = 5;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,9 +72,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void openResultActivity(){
-        Intent intent = new Intent(this, ResultActivity.class);
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+
+        intent.putExtra("Result", pont+"");
         startActivity(intent);
+        addActivityResultLauncher.launch(intent);
+        /*
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                intent.putExtra("Result", pont+"");
+                startActivity(intent);
+                addActivityResultLauncher.launch(intent);
+            }
+        }).start();
+        */
+
     }
+
+    ActivityResultLauncher addActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    x_irany = 5;
+                    y_irany = 5;
+                    circleX = getScreenWidth() / 2 - circleRadius;
+                    circleY = getScreenHeight() / 2 - circleRadius;
+                    pont = 0;
+                }
+            });
 
     public void almaPosition()
     {
@@ -94,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     protected void onPause() {
-        pont = 0;
         super.onPause();
     }
 
@@ -108,34 +141,52 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float sensorX = sensorEvent.values[0];
             float sensorY = sensorEvent.values[1];
 
-                float ujX = circleX - sensorX * 3;  //  sebesség (*2)
+                float ujX = circleX - sensorX * 3;  //  sebesség
                 float ujY = circleY + sensorY * 3;
 
-            if (ujX < circleRadius)        //  képernyő szélek
+            if (ujX < circleRadius)        //  zöld mozgatása
             {
                 ujX = circleRadius;
-                //openResultActivity();
             }
 
             if (ujY < circleRadius)
             {
                 ujY = circleRadius;
-                //openResultActivity();
             }
 
             if (ujX > getScreenWidth() - circleRadius)
             {
                 ujX = getScreenWidth() - circleRadius;
-                //openResultActivity();
             }
 
             if (ujY > getScreenHeight() - circleRadius)
             {
                 ujY = getScreenHeight() - circleRadius;
-                //openResultActivity();
+            }
+/////////////////////////////////////////////////////// TODO
+            rottenX += x_irany;
+            rottenY  += y_irany;
+
+            if (rottenX < circleRadius)        //  fekete mozgatása
+            {
+                x_irany = 5;
             }
 
+            if (rottenY < circleRadius)
+            {
+                y_irany = 5;
+            }
 
+            if (rottenX > getScreenWidth() - circleRadius)
+            {
+                x_irany = -5;
+            }
+
+            if (rottenY > getScreenHeight() - circleRadius)
+            {
+                y_irany = -5;
+            }
+///////////////////////////////////////////////////////
             circleX = Math.round(ujX);     //  új pozíció értéke
             circleY = Math.round(ujY);
 
@@ -150,9 +201,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if ((circleX <= rottenX + circleRadius  && circleX >= rottenX || circleX >= rottenX - circleRadius && circleX <= rottenX) &&    // TODO: 30 is lehet elég
                     (circleY <= rottenY + circleRadius && circleY >= rottenY || circleY >= rottenY - circleRadius) && circleY <= rottenY )
             {
-                pont--;
+                openResultActivity();
+                x_irany = 0;
+                y_irany = 0;
                 almaPosition();
                 rottenPosition();
+
             }
 
             canvas.invalidate();
