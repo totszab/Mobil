@@ -1,16 +1,12 @@
 package hu.unideb.inf.myapplication;
 
-import static hu.unideb.inf.myapplication.R.id.finalResultTextView;
-
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -22,11 +18,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.view.Display;
 import android.view.View;
-import android.view.Window;
-import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -45,8 +38,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private int pont = 0;
 
-    private int x_irany = 5;
-    private int y_irany = 5;
+    private int r_x_speed = 10;
+    private int r_y_speed = 10;
+    private int a_x_speed = 5;
+    private int a_y_speed = 5;
 
 
     @Override
@@ -76,18 +71,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         intent.putExtra("Result", pont+"");
         startActivity(intent);
-        addActivityResultLauncher.launch(intent);
-        /*
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                intent.putExtra("Result", pont+"");
-                startActivity(intent);
-                addActivityResultLauncher.launch(intent);
-            }
-        }).start();
-        */
-
     }
 
     ActivityResultLauncher addActivityResultLauncher = registerForActivityResult(
@@ -95,8 +78,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult result) {
-                    x_irany = 5;
-                    y_irany = 5;
+                    r_x_speed = 10;
+                    r_y_speed = 10;
+                    a_x_speed = 5;
+                    a_y_speed = 5;
                     circleX = getScreenWidth() / 2 - circleRadius;
                     circleY = getScreenHeight() / 2 - circleRadius;
                     pont = 0;
@@ -161,32 +146,55 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             if (ujY > getScreenHeight() - circleRadius)
             {
-                ujY = getScreenHeight() - circleRadius;
+                ujY = getScreenHeight() - circleRadius ;
             }
 /////////////////////////////////////////////////////// TODO
-            rottenX += x_irany;
-            rottenY  += y_irany;
+            rottenX += r_x_speed;
+            rottenY  += r_y_speed;
+
+            appleX += a_x_speed;
+            appleY += a_y_speed;
 
             if (rottenX < circleRadius)        //  fekete mozgatása
             {
-                x_irany = 5;
+                r_x_speed = 10;
             }
 
             if (rottenY < circleRadius)
             {
-                y_irany = 5;
+                r_y_speed = 10;
             }
 
             if (rottenX > getScreenWidth() - circleRadius)
             {
-                x_irany = -5;
+                r_x_speed = -10;
             }
 
             if (rottenY > getScreenHeight() - circleRadius)
             {
-                y_irany = -5;
+                r_y_speed = -10;
             }
 ///////////////////////////////////////////////////////
+            if (appleX < circleRadius)        //  piros mozgatása
+            {
+                a_x_speed = 5;
+            }
+
+            if (appleY < circleRadius)
+            {
+                a_y_speed = 5;
+            }
+
+            if (appleX > getScreenWidth() - circleRadius)
+            {
+                a_x_speed = -5;
+            }
+
+            if (appleY > getScreenHeight() - circleRadius )    //  -170 saját telefon
+            {
+                a_y_speed = -5;
+            }
+////////////////////////////////////////////////////////////
             circleX = Math.round(ujX);     //  új pozíció értéke
             circleY = Math.round(ujY);
 
@@ -202,8 +210,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     (circleY <= rottenY + circleRadius && circleY >= rottenY || circleY >= rottenY - circleRadius) && circleY <= rottenY )
             {
                 openResultActivity();
-                x_irany = 0;
-                y_irany = 0;
+                r_x_speed = 0;
+                r_y_speed = 0;
+                a_x_speed = 0;
+                a_y_speed = 0;
                 almaPosition();
                 rottenPosition();
 
