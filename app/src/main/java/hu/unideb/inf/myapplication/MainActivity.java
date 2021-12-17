@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void almaPosition()
     {
-        appleX = getRandomNumber(circleRadius*2,getScreenWidth()-circleRadius*2);
+        appleX = getRandomNumber(circleRadius*2,getScreenWidth()-circleRadius*2);   // ne legyen teljesen kint
         appleY = getRandomNumber(circleRadius*2,getScreenHeight()-circleRadius*2);
     }
     public void rottenPosition()
